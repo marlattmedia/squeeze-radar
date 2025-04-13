@@ -1,6 +1,10 @@
 name: Update Reddit Sentiment
 
 on:
+  workflow_dispatch:
+
+
+on:
   schedule:
     - cron: "0 11 * * *"  # 7:00 AM Eastern Time
   workflow_dispatch:  # Allows manual trigger

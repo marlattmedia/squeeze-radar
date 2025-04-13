@@ -1,0 +1,19 @@
+
+[
+  {
+    "ticker": "GME",
+    "company": "GameStop Corp.",
+    "float": "45M",
+    "short_percent": "22.1%",
+    "avg_volume": "950K",
+    "notes": "🔥 High retail interest on Reddit"
+  },
+  {
+    "ticker": "CRKN",
+    "company": "Crown ElectroKinetics",
+    "float": "8M",
+    "short_percent": "28.9%",
+    "avg_volume": "620K",
+    "notes": "💬 Chatter on Stocktwits"
+  }
+]

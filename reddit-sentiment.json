@@ -1,0 +1,38 @@
+[
+  {
+    "subreddit": "r/wallstreetbets",
+    "ticker": "GME",
+    "mentions": 120,
+    "rank": 1
+  },
+  {
+    "subreddit": "r/stocks",
+    "ticker": "TSLA",
+    "mentions": 110,
+    "rank": 1
+  },
+  {
+    "subreddit": "r/wallstreetbets",
+    "ticker": "AMC",
+    "mentions": 95,
+    "rank": 2
+  },
+  {
+    "subreddit": "r/stocks",
+    "ticker": "PLTR",
+    "mentions": 78,
+    "rank": 2
+  },
+  {
+    "subreddit": "r/stocks",
+    "ticker": "GME",
+    "mentions": 60,
+    "rank": 3
+  },
+  {
+    "subreddit": "r/wallstreetbets",
+    "ticker": "FFAI",
+    "mentions": 55,
+    "rank": 3
+  }
+]

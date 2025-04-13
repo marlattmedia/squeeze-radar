@@ -180,35 +180,5 @@
     renderTickerTape();
   };
 </script>
-
-<script>
-async function refreshRadarData() {
-    const url = "https://raw.githubusercontent.com/marlattmedia/squeeze-radar/main/squeeze-radar.json";
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-
-        const tableBody = document.getElementById("squeeze-radar-body");
-        tableBody.innerHTML = "";
-
-        data.forEach(stock => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${stock.ticker}</td>
-                <td>${stock.company}</td>
-                <td>${stock.float}</td>
-                <td>${stock.short_percent}</td>
-                <td>${stock.avg_volume}</td>
-                <td>${stock.notes}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-    } catch (err) {
-        alert("Failed to load live radar data.");
-        console.error(err);
-    }
-}
-</script>
-
 </body>
 </html>

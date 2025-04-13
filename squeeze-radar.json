@@ -1,0 +1,42 @@
+[
+  {
+    "ticker": "FFIE",
+    "company": "Faraday Future Intelligent Electric Inc.",
+    "float": "5.2M",
+    "shortPercent": "34.6%",
+    "volume": "820K",
+    "notes": "Low float + high borrow fee spike"
+  },
+  {
+    "ticker": "TENX",
+    "company": "Tenax Therapeutics Inc.",
+    "float": "3.8M",
+    "shortPercent": "41.2%",
+    "volume": "540K",
+    "notes": "Low float + unusual premarket activity"
+  },
+  {
+    "ticker": "RDBX",
+    "company": "Redbox Entertainment Inc.",
+    "float": "7.1M",
+    "shortPercent": "36.9%",
+    "volume": "980K",
+    "notes": "Retail favorite with previous volatility"
+  },
+  {
+    "ticker": "TRKA",
+    "company": "Troika Media Group Inc.",
+    "float": "12.4M",
+    "shortPercent": "29.3%",
+    "volume": "890K",
+    "notes": "Social media chatter spiking"
+  },
+  {
+    "ticker": "GME",
+    "company": "GameStop Corp.",
+    "float": "75M",
+    "shortPercent": "20.1%",
+    "volume": "2.1M",
+    "notes": "Ongoing institutional focus + options interest"
+  }
+]

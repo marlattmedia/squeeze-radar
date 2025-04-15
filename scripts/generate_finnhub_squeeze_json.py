@@ -10,21 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🛒 Checkout Repo
+      - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: 🐍 Set Up Python
+      - name: Set Up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: 📦 Install Dependencies
+      - name: Install Dependencies
         run: pip install requests
 
-      - name: 🧠 Generate squeeze-radar.json (Finnhub)
+      - name: Generate squeeze-radar.json (Finnhub)
         run: python scripts/generate_finnhub_squeeze_json.py
 
-      - name: 💾 Commit and Push JSON
+      - name: Commit and Push JSON
         run: |
           git config user.name "marlattmedia"
           git config user.email "actions@github.com"

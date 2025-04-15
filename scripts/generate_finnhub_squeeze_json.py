@@ -1,4 +1,4 @@
-name: Update Squeeze Radar from Finnhub
+
 
 on:
   workflow_dispatch:

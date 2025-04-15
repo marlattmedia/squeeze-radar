@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🧠 Live Short Squeeze Radar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #f1f1f1;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #ffcc00;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #333;
+    }
+    th {
+      background-color: #222;
+    }
+    tr:nth-child(even) {
+      background-color: #1a1a1a;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 Live Short Squeeze Radar</h1>
+  <table id="squeezeTable">
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>Company</th>
+        <th>Float</th>
+        <th>Short %</th>
+        <th>Avg Volume</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    fetch("https://raw.githubusercontent.com/marlattmedia/squeeze-radar/refs/heads/main/squeeze-radar.json")
+      .then(response => response.json())
+      .then(data => {
+        const tbody = document.querySelector("#squeezeTable tbody");
+        data.forEach(stock => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${stock.ticker}</td>
+            <td>${stock.company}</td>
+            <td>${stock.float}</td>
+            <td>${stock.short_percent}</td>
+            <td>${stock.avg_volume}</td>
+            <td>${stock.notes}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      })
+      .catch(error => {
+        console.error("Failed to load data:", error);
+        document.querySelector("#squeezeTable tbody").innerHTML = "<tr><td colspan='6'>⚠️ Error loading data</td></tr>";
+      });
+  </script>
+</body>
+</html>

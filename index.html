@@ -3,58 +3,45 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Live Market Dashboard</title>
+    <title>Live Squeeze & Sentiment Dashboard</title>
     <style>
-        body {
+        body {{
             background-color: #111;
-            color: #fefefe;
+            color: #f5f5f5;
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        h1 {
-            background-color: #222;
-            color: gold;
             padding: 20px;
-            margin: 0;
-            font-size: 28px;
-        }
-        section {
-            padding: 20px;
-        }
-        table {
+        }}
+        h1 {{
+            color: #FFD700;
+        }}
+        table {{
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 40px;
-        }
-        th, td {
-            border: 1px solid #444;
+        }}
+        th, td {{
+            border: 1px solid #333;
             padding: 10px;
-            text-align: left;
-        }
-        th {
+            text-align: center;
+        }}
+        th {{
             background-color: #222;
-        }
-        .error {
-            color: #ff6b6b;
-            margin: 5px 0;
-        }
-        .loading {
+            color: #FFD700;
+        }}
+        .warning {{
+            color: #ff4d4d;
+        }}
+        .info {{
+            color: #00f0ff;
+        }}
+        .note {{
+            font-size: 0.9em;
             color: #ccc;
-        }
-        .source-label {
-            font-weight: bold;
-            color: #66ccff;
-            margin-top: 15px;
-        }
+        }}
     </style>
 </head>
 <body>
-
-<h1>📊 Live Market Dashboard</h1>
-
-<section id="squeeze-radar">
-    <h2>🧠 Short Squeeze Radar</h2>
+    <h1>🧠 Live Short Squeeze Radar</h1>
     <table id="squeezeTable">
         <thead>
             <tr>
@@ -68,83 +55,57 @@
         </thead>
         <tbody></tbody>
     </table>
-</section>
 
-<section id="social-tracker">
+    <h1>📣 Live Social Sentiment Tracker</h1>
     <h2>📣 Social Media Sentiment Radar</h2>
-    <p>Tracking live mentions from Reddit (<code>r/shortsqueeze</code>, <code>r/wallstreetbets</code>, and <code>r/stocks</code>).</p>
-    <div id="reddit-errors" class="error"></div>
-    <table id="redditTable">
-        <thead>
-            <tr>
-                <th>Subreddit</th>
-                <th>Ticker</th>
-                <th>Mentions</th>
-                <th>Rank</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</section>
+    <p>Tracking live mentions from Reddit, Truth Social (Trump: stocks or tariffs), X (Twitter), and Stocktwits.</p>
+    <div id="redditStatus"></div>
+    <div class="info">
+        <p><strong>Truth Social (Trump: stocks or tariffs)</strong><br>🛠 Integration coming soon – will filter real Trump posts for specific terms.</p>
+        <p><strong>X (Twitter)</strong><br>🛠 Integration coming soon – real-time keyword monitoring planned.</p>
+        <p><strong>Stocktwits</strong><br>🛠 Integration coming soon – tracking ticker mentions underway.</p>
+    </div>
 
-<script>
-function fetchJSON(url) {
-    return fetch(url)
-        .then(response => {
-            if (!response.ok) throw new Error('HTTP error ' + response.status);
-            return response.json();
-        });
-}
+    <script>
+        // Load Short Squeeze Radar Data
+        fetch('squeeze-radar.json')
+            .then(response => response.json())
+            .then(data => {{
+                const tbody = document.querySelector("#squeezeTable tbody");
+                data.forEach(stock => {{
+                    const row = `<tr>
+                        <td>${{stock.ticker}}</td>
+                        <td>${{stock.company}}</td>
+                        <td>${{stock.float}}</td>
+                        <td>${{stock.short_percent}}</td>
+                        <td>${{stock.avg_volume}}</td>
+                        <td>${{stock.notes}}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                }});
+            }})
+            .catch(error => {{
+                const tbody = document.querySelector("#squeezeTable tbody");
+                tbody.innerHTML = `<tr><td colspan="6" class="warning">Failed to load squeeze-radar.json</td></tr>`;
+            }});
 
-function loadSqueezeRadar() {
-    fetchJSON('squeeze-radar.json')
-        .then(data => {
-            const tbody = document.querySelector("#squeezeTable tbody");
-            tbody.innerHTML = "";
-            data.forEach(item => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${item.ticker}</td>
-                    <td>${item.company}</td>
-                    <td>${item.float}</td>
-                    <td>${item.short_percent}</td>
-                    <td>${item.avg_volume}</td>
-                    <td>${item.notes}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        })
-        .catch(error => {
-            console.error('Squeeze Radar Error:', error);
-        });
-}
-
-function loadRedditSentiment() {
-    fetchJSON('reddit-sentiment.json')
-        .then(data => {
-            const tbody = document.querySelector("#redditTable tbody");
-            tbody.innerHTML = "";
-            data.forEach((item, index) => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${item.subreddit}</td>
-                    <td>${item.ticker}</td>
-                    <td>${item.mentions}</td>
-                    <td>${index + 1}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        })
-        .catch(error => {
-            console.error('Reddit Tracker Error:', error);
-            document.getElementById("reddit-errors").textContent = "⚠️ Could not load Reddit sentiment data.";
-        });
-}
-
-// Run on page load
-loadSqueezeRadar();
-loadRedditSentiment();
-</script>
-
+        // Load Reddit Sentiment Radar
+        fetch('reddit-sentiment.json')
+            .then(response => response.json())
+            .then(data => {{
+                const statusDiv = document.getElementById("redditStatus");
+                statusDiv.innerHTML = '<h3>Reddit Sentiment:</h3>';
+                data.forEach(entry => {{
+                    statusDiv.innerHTML += `<p><strong>${{entry.subreddit}}</strong>: ${{entry.ticker}} – Mentions: ${{entry.mentions}} (Rank: ${{entry.rank}})</p>`;
+                }});
+            }})
+            .catch(() => {{
+                const statusDiv = document.getElementById("redditStatus");
+                statusDiv.innerHTML = `
+                    <p class="warning">⚠ Could not load Reddit (r/shortsqueeze)</p>
+                    <p class="warning">⚠ Could not load Reddit (r/wallstreetbets)</p>
+                    <p class="warning">⚠ Could not load Reddit (r/stocks)</p>`;
+            }});
+    </script>
 </body>
 </html>

@@ -1,19 +1,29 @@
-
 [
   {
     "ticker": "GME",
     "company": "GameStop Corp.",
     "float": "45M",
     "short_percent": "22.1%",
-    "avg_volume": "950K",
-    "notes": "🔥 High retail interest on Reddit"
+    "current_volume": "950K",
+    "avg_volume": "1200K",
+    "notes": "\ud83d\udd25 Retail interest"
+  },
+  {
+    "ticker": "FFAI",
+    "company": "Future Fintech",
+    "float": "6.2M",
+    "short_percent": "18.7%",
+    "current_volume": "540K",
+    "avg_volume": "900K",
+    "notes": "\u2705 Low float"
   },
   {
     "ticker": "CRKN",
     "company": "Crown ElectroKinetics",
-    "float": "8M",
-    "short_percent": "28.9%",
-    "avg_volume": "620K",
-    "notes": "💬 Chatter on Stocktwits"
+    "float": "4.8M",
+    "short_percent": "29.8%",
+    "current_volume": "820K",
+    "avg_volume": "1000K",
+    "notes": "\u26a1 Reddit momentum"
   }
 ]

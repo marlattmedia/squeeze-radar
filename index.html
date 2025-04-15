@@ -1,60 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live Squeeze + Sentiment Dashboard</title>
+  <meta charset="UTF-8">
+  <title>Squeeze Radar + Reddit Sentiment</title>
   <style>
     body {
       background-color: #111;
-      color: #fff;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 20px;
+      color: #f1f1f1;
+      font-family: Arial, sans-serif;
+      padding: 30px;
     }
-    h1, h2 {
-      color: #ffd700;
-      margin-top: 40px;
-    }
-    h1 {
-      font-size: 28px;
-    }
-    h2 {
-      font-size: 22px;
+    h1, h2, h3 {
+      color: #ffcc00;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 16px;
+      margin-top: 20px;
+      margin-bottom: 40px;
     }
     th, td {
-      border: 1px solid #222;
       padding: 10px;
-      text-align: left;
+      text-align: center;
+      border: 1px solid #333;
     }
     th {
       background-color: #222;
-      color: #00ffff;
     }
-    td {
-      background-color: #181818;
+    tr:nth-child(even) {
+      background-color: #1a1a1a;
     }
-    .icon {
-      margin-right: 8px;
-    }
-    .warning {
-      color: #ff4f4f;
-    }
-    .coming-soon {
-      color: #ccc;
-      font-size: 14px;
+    section {
+      margin-bottom: 50px;
     }
   </style>
 </head>
 <body>
 
-  <h1>🧠 Live Short Squeeze Radar</h1>
-  <table id="squeezeRadarTable">
+<h1>📈 Live Short Squeeze & Reddit Sentiment Dashboard</h1>
+
+<section>
+  <h2>🧠 Short Squeeze Radar</h2>
+  <table id="squeezeTable">
     <thead>
       <tr>
         <th>Ticker</th>
@@ -67,46 +54,75 @@
     </thead>
     <tbody></tbody>
   </table>
+</section>
 
-  <h1>📣 Live Social Sentiment Tracker</h1>
-  <h2>📯 Social Media Sentiment Radar</h2>
-  <p>Tracking live mentions from Reddit, Truth Social (Trump: stocks or tariffs), X (Twitter), and Stocktwits.</p>
+<section>
+  <h2>📣 Reddit Sentiment Radar</h2>
+  <div id="redditResults">
+    <p style="color:#999;">Loading Reddit sentiment data...</p>
+  </div>
+</section>
 
-  <div class="warning">⚠️ Could not load Reddit (r/shortsqueeze)</div>
-  <div class="warning">⚠️ Could not load Reddit (r/wallstreetbets)</div>
-  <div class="warning">⚠️ Could not load Reddit (r/stocks)</div>
+<script>
+// Squeeze Radar Loader
+fetch("https://marlattmedia.github.io/squeeze-radar/squeeze-radar.json")
+  .then(res => res.json())
+  .then(data => {
+    const tbody = document.querySelector("#squeezeTable tbody");
+    tbody.innerHTML = "";
 
-  <h3 style="color:#00ccff;">Truth Social (Trump: stocks or tariffs)</h3>
-  <div class="coming-soon">🛠️ Integration coming soon – will filter real Trump posts for specific terms.</div>
+    const filtered = data.filter(stock => {
+      const num = parseFloat(stock.avg_volume.replace(/[^0-9.]/g, ""));
+      return num < 5000; // under 5M
+    });
 
-  <h3 style="color:#00ccff;">X (Twitter)</h3>
-  <div class="coming-soon">🛠️ Integration coming soon – real-time keyword monitoring planned.</div>
-
-  <h3 style="color:#00ccff;">Stocktwits</h3>
-  <div class="coming-soon">🛠️ Integration coming soon – tracking ticker mentions underway.</div>
-
-  <script>
-    fetch("squeeze-radar.json")
-      .then(res => res.json())
-      .then(data => {
-        const table = document.getElementById("squeezeRadarTable").querySelector("tbody");
-        data.forEach(item => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${item.ticker}</td>
-            <td>${item.company}</td>
-            <td>${item.float}</td>
-            <td>${item.short_percent}</td>
-            <td>${item.avg_volume}</td>
-            <td>${item.notes}</td>
-          `;
-          table.appendChild(row);
-        });
-      })
-      .catch(err => {
-        console.error("Failed to load squeeze-radar.json", err);
+    if (filtered.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='6'>No stocks meet current squeeze criteria.</td></tr>";
+    } else {
+      filtered.forEach(stock => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${stock.ticker}</td>
+          <td>${stock.company}</td>
+          <td>${stock.float}</td>
+          <td>${stock.short_percent}</td>
+          <td>${stock.avg_volume}</td>
+          <td>${stock.notes}</td>
+        `;
+        tbody.appendChild(row);
       });
-  </script>
+    }
+  })
+  .catch(() => {
+    document.querySelector("#squeezeTable tbody").innerHTML = "<tr><td colspan='6'>⚠️ Error loading squeeze data</td></tr>";
+  });
+
+// Reddit Sentiment Loader
+fetch("https://marlattmedia.github.io/squeeze-radar/reddit-sentiment.json")
+  .then(res => res.json())
+  .then(data => {
+    const container = document.getElementById("redditResults");
+    if (!data || data.length === 0) {
+      container.innerHTML = "<p>No Reddit sentiment data available.</p>";
+      return;
+    }
+
+    let content = "<table><thead><tr><th>Subreddit</th><th>Ticker</th><th>Mentions</th><th>Rank</th></tr></thead><tbody>";
+    data.forEach(item => {
+      content += `<tr>
+        <td>${item.subreddit}</td>
+        <td>${item.ticker}</td>
+        <td>${item.mentions}</td>
+        <td>${item.rank}</td>
+      </tr>`;
+    });
+    content += "</tbody></table>";
+    container.innerHTML = content;
+  })
+  .catch(() => {
+    document.getElementById("redditResults").innerHTML = "<p style='color:#f88;'>⚠️ Failed to load Reddit sentiment data.</p>";
+  });
+</script>
 
 </body>
 </html>

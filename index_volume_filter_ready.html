@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>📊 Short Squeeze &amp; Reddit Sentiment Dashboard</title>
+<style>
+    body {
+      background-color: #111;
+      color: #0ff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      color: #ff69b4;
+      margin-bottom: 5px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 40px;
+    }
+    th, td {
+      border: 1px solid #0ff;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #222;
+    }
+    button {
+      background-color: #00ffff;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .section {
+      margin-bottom: 60px;
+    }
+  </style>
+</head>
+<body>
+<div class="section">
+<h2>🧠 Short Squeeze Radar</h2>
+<p>Live monitoring for low float, high short %, and low volume stocks that may squeeze.</p>
+<button onclick="refreshSqueezeRadar()">🔄 Refresh Radar</button><div><button onclick="filterVolume(1000000)">📉 Under 1M Avg Volume</button><button onclick="filterVolume(2000000)">📊 Under 2M Avg Volume</button></div>
+<table id="squeeze-table">
+<thead>
+<tr>
+<th>Ticker</th>
+<th>Company</th>
+<th>Float</th>
+<th>Short %</th>
+<th>Avg Volume</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr><td colspan="6">Loading...</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2>📡 Reddit Sentiment Radar</h2>
+<p>Top mentioned stocks on Reddit (r/stocks, r/wallstreetbets, and r/shortsqueeze)</p>
+<button onclick="refreshRedditRadar()">🔄 Refresh Reddit Mentions</button>
+<table id="reddit-table">
+<thead>
+<tr>
+<th>Subreddit</th>
+<th>Ticker</th>
+<th>Mentions</th>
+<th>Rank</th>
+</tr>
+</thead>
+<tbody>
+<tr><td colspan="4">Loading...</td></tr>
+</tbody>
+</table>
+</div>
+<script>
+    async function refreshSqueezeRadar() {
+      const table = document.querySelector('#squeeze-table tbody');
+      table.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+      try {
+        const res = await fetch('https://raw.githubusercontent.com/marlattmedia/squeeze-radar/main/squeeze-radar.json');
+        const data = await res.json();
+        table.innerHTML = '';
+        data.forEach(stock => {
+          const row = `
+            <tr>
+              <td>${stock.ticker}</td>
+              <td>${stock.company || ''}</td>
+              <td>${stock.float}</td>
+              <td>${stock.short_percent}</td>
+              <td>${stock.avg_volume}</td>
+              <td>${stock.notes || ''}</td>
+            </tr>`;
+          table.innerHTML += row;
+        });
+      } catch (err) {
+        table.innerHTML = '<tr><td colspan="6">⚠️ Failed to load data</td></tr>';
+      }
+    }
+
+    async function refreshRedditRadar() {
+      const table = document.querySelector('#reddit-table tbody');
+      table.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+      try {
+        const res = await fetch('https://raw.githubusercontent.com/marlattmedia/squeeze-radar/main/reddit-sentiment.json');
+        const data = await res.json();
+        table.innerHTML = '';
+        data.forEach(item => {
+          const row = `
+            <tr>
+              <td>${item.subreddit}</td>
+              <td>${item.ticker}</td>
+              <td>${item.mentions}</td>
+              <td>${item.rank}</td>
+            </tr>`;
+          table.innerHTML += row;
+        });
+      } catch (err) {
+        table.innerHTML = '<tr><td colspan="4">⚠️ Failed to load data</td></tr>';
+      }
+    }
+
+    // Load both on startup
+    refreshSqueezeRadar();
+    refreshRedditRadar();
+  
+function filterVolume(limit) {
+  const rows = document.querySelectorAll('#squeeze-table tbody tr');
+  rows.forEach(row => {
+    const cell = row.cells[4];
+    if (!cell) return;
+    const text = cell.textContent.replace(/[^\d.]/g, '');
+    const multiplier = cell.textContent.includes('M') ? 1e6 : 1e3;
+    const value = parseFloat(text) * multiplier;
+    row.style.display = value <= limit ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

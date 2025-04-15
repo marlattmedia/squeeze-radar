@@ -1,0 +1,33 @@
+name: Update Reddit Sentiment Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'  # Every hour
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Generate reddit-sentiment.json
+        run: python scripts/generate_reddit_sentiment.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "marlattmedia"
+          git config --global user.email "action@github.com"
+          git add reddit-sentiment.json
+          git commit -m "🔁 Update Reddit Sentiment JSON"
+          git push

@@ -1,32 +1,73 @@
 
+import requests
+from bs4 import BeautifulSoup
 import json
-from datetime import datetime
 
-# Simulated stock data (replace with real scraping or API pull later)
-candidates = [
-    {"ticker": "GME", "company": "GameStop Corp.", "float": 45, "short_percent": 22.1, "volume": 950000, "avg_volume": 1200000, "notes": "🔥 Retail interest"},
-    {"ticker": "FFAI", "company": "Future Fintech", "float": 6.2, "short_percent": 18.7, "volume": 540000, "avg_volume": 900000, "notes": "✅ Low float"},
-    {"ticker": "XYZC", "company": "Zebra Chip Co", "float": 62.1, "short_percent": 12.5, "volume": 450000, "avg_volume": 1100000, "notes": "❌ Float too high"},
-    {"ticker": "CRKN", "company": "Crown ElectroKinetics", "float": 4.8, "short_percent": 29.8, "volume": 820000, "avg_volume": 1000000, "notes": "⚡ Reddit momentum"},
-    {"ticker": "NAKD", "company": "Cenntro Electric", "float": 7.1, "short_percent": 11.3, "volume": 410000, "avg_volume": 750000, "notes": "Too low short %"}
-]
+FINVIZ_URL = "https://finviz.com/screener.ashx?v=111&f=sh_avgvol_o500,sh_float_u50,sh_price_o1,sh_short_o15&ft=4&o=-short"
 
-# Filter based on screener logic
-filtered = []
-for stock in candidates:
-    if stock["float"] < 50 and stock["short_percent"] > 15 and stock["volume"] < 1000000:
-        filtered.append({
-            "ticker": stock["ticker"],
-            "company": stock["company"],
-            "float": f"{stock['float']}M",
-            "short_percent": f"{stock['short_percent']}%",
-            "current_volume": f"{int(stock['volume']/1000)}K",
-            "avg_volume": f"{int(stock['avg_volume']/1000)}K",
-            "notes": stock["notes"]
-        })
+HEADERS = {
+    "User-Agent": "Mozilla/5.0"
+}
 
-# Write to JSON
-with open("squeeze-radar.json", "w") as f:
-    json.dump(filtered, f, indent=2)
+def fetch_finviz_tickers():
+    response = requests.get(FINVIZ_URL, headers=HEADERS)
+    soup = BeautifulSoup(response.text, "html.parser")
+    table = soup.find("table", class_="table-light")
+    
+    tickers = []
+    for row in table.find_all("tr")[1:]:
+        cols = row.find_all("td")
+        if len(cols) >= 2:
+            ticker = cols[1].text.strip()
+            tickers.append(ticker)
+    return tickers
 
-print(f"✅ squeeze-radar.json updated at {datetime.utcnow()} UTC")
+def fetch_yahoo_data(ticker):
+    url = f"https://query1.finance.yahoo.com/v10/finance/quoteSummary/{ticker}?modules=defaultKeyStatistics,summaryDetail"
+    r = requests.get(url, headers=HEADERS)
+    if r.status_code != 200:
+        return None
+
+    try:
+        data = r.json()["quoteSummary"]["result"][0]
+        stats = data["defaultKeyStatistics"]
+        summary = data["summaryDetail"]
+        float_shares = stats.get("sharesOutstanding", {}).get("raw", 0)
+        short_percent = stats.get("shortPercentOfFloat", {}).get("raw", 0)
+        avg_vol = summary.get("averageVolume", {}).get("raw", 0)
+        cur_vol = summary.get("volume", {}).get("raw", 0)
+
+        return {
+            "float": round(float_shares / 1_000_000, 1),
+            "short_percent": round(short_percent * 100, 1),
+            "avg_volume": int(avg_vol),
+            "volume": int(cur_vol)
+        }
+    except Exception:
+        return None
+
+def generate_json():
+    tickers = fetch_finviz_tickers()
+    result = []
+
+    for ticker in tickers:
+        info = fetch_yahoo_data(ticker)
+        if not info:
+            continue
+
+        if info["float"] < 50 and info["short_percent"] > 15 and info["volume"] < 1_000_000:
+            result.append({
+                "ticker": ticker,
+                "company": "",
+                "float": f"{info['float']}M",
+                "short_percent": f"{info['short_percent']}%",
+                "avg_volume": f"{int(info['avg_volume'] / 1000)}K",
+                "current_volume": f"{int(info['volume'] / 1000)}K",
+                "notes": "✅ Matches squeeze criteria"
+            })
+
+    with open("squeeze-radar.json", "w") as f:
+        json.dump(result, f, indent=2)
+
+if __name__ == "__main__":
+    generate_json()

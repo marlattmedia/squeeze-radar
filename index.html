@@ -100,7 +100,7 @@
 
   <script>
     async function loadRadarData() {
-      const response = await fetch('squeeze-radar.json');
+      const response = await fetch('https://raw.githubusercontent.com/marlattmedia/squeeze-radar/refs/heads/main/squeeze-radar.json');
       const data = await response.json();
       const tbody = document.querySelector('#radar-table tbody');
       tbody.innerHTML = '';
@@ -118,7 +118,7 @@
     }
 
     async function loadRedditData() {
-      const response = await fetch('reddit-sentiment.json');
+      const response = await fetch('https://raw.githubusercontent.com/marlattmedia/squeeze-radar/refs/heads/main/reddit-sentiment.json');
       const data = await response.json();
       const tbody = document.querySelector('#reddit-table tbody');
       tbody.innerHTML = '';
@@ -152,7 +152,7 @@
     new TradingView.widget({
       container_id: "tradingview-widget",
       autosize: true,
-      symbol: "NASDAQ:GME",
+      symbol: "NYSE:GME",
       interval: "15",
       timezone: "Etc/UTC",
       theme: "dark",

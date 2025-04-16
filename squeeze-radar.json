@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "ticker": "GME",
+    "short_percent": "22%",
+    "float": "30M",
+    "volume": "500,000",
+    "catalyst": "Reddit buzz"
+  },
+  {
+    "ticker": "FFAI",
+    "short_percent": "18%",
+    "float": "12M",
+    "volume": "850,000",
+    "catalyst": "Low float runner"
+  }
+]

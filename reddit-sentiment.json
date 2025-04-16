@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "ticker": "GME",
+    "mentions": 1420,
+    "subreddit": "r/wallstreetbets"
+  },
+  {
+    "ticker": "FFAI",
+    "mentions": 545,
+    "subreddit": "r/shortsqueeze"
+  }
+]

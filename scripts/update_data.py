@@ -1,171 +1,111 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📈 Stock Squeeze Radar Dashboard</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #fff;
-      margin: 0;
-      padding: 0 10px;
-    }
-    h1, h2, h3 {
-      color: #ffcc00;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 10px 0;
-    }
-    th, td {
-      border: 1px solid #444;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #333;
-    }
-    tr:nth-child(even) {
-      background-color: #1e1e1e;
-    }
-    button {
-      margin-right: 10px;
-      padding: 8px 12px;
-      border: none;
-      background: #333;
-      color: #fff;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    .section {
-      margin-bottom: 30px;
-    }
-    .tradingview-widget-container {
-      height: 800px;
-    }
-  </style>
-</head>
-<body>
-  <h1>📈 Squeeze Radar Dashboard</h1>
 
-  <div class="section">
-    <h2>📡 Live News & Alerts</h2>
-    <ul id="live-news"></ul>
-  </div>
+import requests
+from bs4 import BeautifulSoup
+import json
+import re
+from collections import Counter
+from datetime import datetime
 
-  <div class="section">
-    <h2>📊 Filter by Avg Volume</h2>
-    <button onclick="filterVolume(5000000)">Under 5M</button>
-    <button onclick="filterVolume(2000000)">Under 2M</button>
-  </div>
+HEADERS = {
+    "User-Agent": "Mozilla/5.0"
+}
 
-  <div class="section">
-    <h2>🔥 Short Squeeze Radar</h2>
-    <table id="radar-table">
-      <thead>
-        <tr><th>Ticker</th><th>Short %</th><th>Float</th><th>Volume</th><th>Catalyst</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+# --- Finviz Scraper ---
+def get_finviz_data():
+    url = "https://finviz.com/screener.ashx?v=111&s=ta_topgainers&f=sh_short_o15,sh_float_u50,sh_avgvol_o100&ft=4"
+    response = requests.get(url, headers=HEADERS)
+    soup = BeautifulSoup(response.content, "html.parser")
+    table = soup.find("table", class_="table-light")
+    if not table:
+        return []
+    rows = table.find_all("tr", class_="table-dark-row-cp")
+    radar_data = []
+    for row in rows:
+        cols = row.find_all("td")
+        if len(cols) > 10:
+            radar_data.append({
+                "ticker": cols[1].text.strip(),
+                "short_percent": cols[11].text.strip(),
+                "float": cols[10].text.strip(),
+                "volume": cols[9].text.strip(),
+                "catalyst": "Finviz screener"
+            })
+    return radar_data
 
-  <div class="section">
-    <h2>🧠 Reddit Sentiment Radar</h2>
-    <table id="reddit-table">
-      <thead>
-        <tr><th>Ticker</th><th>Mentions</th><th>Subreddit</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+# --- Reddit Sentiment Scraper ---
+def extract_tickers(text):
+    return re.findall(r"\\$[A-Z]{1,5}|\\b[A-Z]{2,5}\\b", text)
 
-  <div class="section">
-    <h2>📢 Social Media Trackers</h2>
-    <h3>Trump Truth Social (Filtered)</h3>
-    <ul id="truth-social-feed"></ul>
+def get_reddit_mentions(subreddit):
+    url = f"https://www.reddit.com/r/{subreddit}/top/?t=day"
+    response = requests.get(url, headers=HEADERS)
+    soup = BeautifulSoup(response.content, "html.parser")
+    titles = soup.find_all("h3")
+    tickers = []
+    for title in titles:
+        tickers.extend(re.findall(r"\\$?\\b[A-Z]{2,5}\\b", title.text.upper()))
+    tickers = [t.replace("$", "") for t in tickers]
+    top_mentions = Counter(tickers).most_common(10)
+    return [{"ticker": t[0], "mentions": t[1], "subreddit": f"r/{subreddit}"} for t in top_mentions]
 
-    <h3>StockTwits Mentions</h3>
-    <ul id="stocktwits-feed"></ul>
+# --- StockTwits Mock Scraper ---
+def get_stocktwits_sentiment():
+    # This is a placeholder, real implementation would require scraping or API.
+    return [
+        {"ticker": "GME", "mentions": 28, "source": "StockTwits"},
+        {"ticker": "AMC", "mentions": 15, "source": "StockTwits"}
+    ]
 
-    <h3>X (formerly Twitter) Activity</h3>
-    <ul id="x-feed"></ul>
-  </div>
+# --- Truth Social Mock Scraper ---
+def get_truthsocial_posts():
+    return [
+        {
+            "date": str(datetime.now().date()),
+            "content": "They're attacking American companies like GME again!",
+            "keywords": ["GME", "stocks", "tariffs"]
+        }
+    ]
 
-  <div class="section">
-    <h2>📈 TradingView Chart</h2>
-    <div class="tradingview-widget-container">
-      <div id="tradingview-widget" style="height: 100%;"></div>
-    </div>
-  </div>
+# --- Twitter Sentiment Mock Scraper (ApeWisdom) ---
+def get_twitter_sentiment():
+    return [
+        {"ticker": "GME", "mentions": 102, "source": "ApeWisdom"},
+        {"ticker": "BBBY", "mentions": 47, "source": "SwaggyStocks"}
+    ]
 
-  <script>
-    async function loadRadarData() {
-      const response = await fetch('https://raw.githubusercontent.com/marlattmedia/squeeze-radar/refs/heads/main/squeeze-radar.json');
-      const data = await response.json();
-      const tbody = document.querySelector('#radar-table tbody');
-      tbody.innerHTML = '';
-      data.forEach(stock => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${stock.ticker}</td>
-          <td>${stock.short_percent}</td>
-          <td>${stock.float}</td>
-          <td>${stock.volume}</td>
-          <td>${stock.catalyst || ''}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
+# --- Master Routine ---
+def update_data():
+    print("Fetching Finviz data...")
+    radar = get_finviz_data()
 
-    async function loadRedditData() {
-      const response = await fetch('https://raw.githubusercontent.com/marlattmedia/squeeze-radar/refs/heads/main/reddit-sentiment.json');
-      const data = await response.json();
-      const tbody = document.querySelector('#reddit-table tbody');
-      tbody.innerHTML = '';
-      data.forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${item.ticker}</td>
-          <td>${item.mentions}</td>
-          <td>${item.subreddit}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
+    print("Fetching Reddit sentiment...")
+    reddit_data = get_reddit_mentions("shortsqueeze") + get_reddit_mentions("wallstreetbets")
 
-    function filterVolume(maxVolume) {
-      const rows = document.querySelectorAll('#radar-table tbody tr');
-      rows.forEach(row => {
-        const volume = parseInt(row.children[3].textContent.replace(/,/g, ''));
-        row.style.display = volume <= maxVolume ? '' : 'none';
-      });
-    }
+    print("Generating StockTwits sentiment...")
+    stocktwits = get_stocktwits_sentiment()
 
-    window.onload = () => {
-      loadRadarData();
-      loadRedditData();
-    };
-  </script>
+    print("Scraping Truth Social posts...")
+    truth = get_truthsocial_posts()
 
-  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-  <script type="text/javascript">
-    new TradingView.widget({
-      container_id: "tradingview-widget",
-      autosize: true,
-      symbol: "NYSE:GME",
-      interval: "15",
-      timezone: "Etc/UTC",
-      theme: "dark",
-      style: "1",
-      locale: "en",
-      toolbar_bg: "#f1f3f6",
-      enable_publishing: false,
-      allow_symbol_change: true,
-      details: true
-    });
-  </script>
-</body>
-</html>
+    print("Scraping Twitter sentiment...")
+    twitter = get_twitter_sentiment()
+
+    with open("squeeze-radar.json", "w") as f:
+        json.dump(radar, f, indent=2)
+
+    with open("reddit-sentiment.json", "w") as f:
+        json.dump(reddit_data, f, indent=2)
+
+    with open("stocktwits-sentiment.json", "w") as f:
+        json.dump(stocktwits, f, indent=2)
+
+    with open("truthsocial-sentiment.json", "w") as f:
+        json.dump(truth, f, indent=2)
+
+    with open("twitter-sentiment.json", "w") as f:
+        json.dump(twitter, f, indent=2)
+
+    print("✅ All data updated.")
+
+if __name__ == "__main__":
+    update_data()

@@ -44,7 +44,7 @@
       margin-bottom: 30px;
     }
     .tradingview-widget-container {
-      height: 600px;
+      height: 800px;
     }
   </style>
 </head>

@@ -1,0 +1,12 @@
+[
+  {
+    "ticker": "GME",
+    "mentions": 28,
+    "source": "StockTwits"
+  },
+  {
+    "ticker": "AMC",
+    "mentions": 15,
+    "source": "StockTwits"
+  }
+]

@@ -1,0 +1,214 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Squeeze Radar Dashboard</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #121212;
+      color: #f1f1f1;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: gold;
+    }
+    .section {
+      margin-bottom: 40px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    table, th, td {
+      border: 1px solid #333;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #222;
+    }
+    tr:nth-child(even) {
+      background-color: #1a1a1a;
+    }
+    button {
+      margin: 5px;
+      padding: 10px;
+      background-color: #444;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #666;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    #tradingview-widget {
+      width: 100%;
+      height: 800px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📈 Squeeze Radar Dashboard</h1>
+
+    <div class="section">
+      <h2>📰 Live News & Alerts</h2>
+      <div id="news-feed"></div>
+    </div>
+
+    <div class="section">
+      <h2>🧪 Filter by Avg Volume</h2>
+      <button onclick="filterVolume(5000000)">Under 5M</button>
+      <button onclick="filterVolume(2000000)">Under 2M</button>
+    </div>
+
+    <div class="section">
+      <h2>🔥 Short Squeeze Radar</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Short %</th>
+            <th>Float</th>
+            <th>Volume</th>
+            <th>Catalyst</th>
+          </tr>
+        </thead>
+        <tbody id="squeeze-table-body"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>🧠 Reddit Sentiment Radar</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Mentions</th>
+            <th>Subreddit</th>
+          </tr>
+        </thead>
+        <tbody id="reddit-sentiment-body"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>📣 StockTwits Sentiment</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Mentions</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody id="stocktwits-sentiment-body"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>🗣️ Truth Social Activity</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Content</th>
+            <th>Keywords</th>
+          </tr>
+        </thead>
+        <tbody id="truthsocial-sentiment-body"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>🐦 Twitter/X Sentiment</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Mentions</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody id="twitter-sentiment-body"></tbody>
+      </table>
+    </div>
+
+    <div class="section" id="tradingview-section">
+      <h2>📊 TradingView Chart</h2>
+      <div id="tradingview-widget"></div>
+    </div>
+  </div>
+
+  <script>
+    async function fetchAndPopulate(url, tableId, formatter) {
+      const response = await fetch(url);
+      const data = await response.json();
+      const tbody = document.getElementById(tableId);
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = formatter(row);
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function fetchData() {
+      fetchAndPopulate("https://raw.githubusercontent.com/marlattmedia/squeeze-radar/refs/heads/main/squeeze-radar.json", "squeeze-table-body",
+        row => `<td>${row.ticker}</td><td>${row.short_percent}</td><td>${row.float}</td><td>${row.volume}</td><td>${row.catalyst}</td>`);
+
+      fetchAndPopulate("https://raw.githubusercontent.com/marlattmedia/squeeze-radar/refs/heads/main/reddit-sentiment.json", "reddit-sentiment-body",
+        row => `<td>${row.ticker}</td><td>${row.mentions}</td><td>${row.subreddit}</td>`);
+
+      fetchAndPopulate("https://raw.githubusercontent.com/marlattmedia/squeeze-radar/refs/heads/main/stocktwits-sentiment.json", "stocktwits-sentiment-body",
+        row => `<td>${row.ticker}</td><td>${row.mentions}</td><td>${row.source}</td>`);
+
+      fetchAndPopulate("https://raw.githubusercontent.com/marlattmedia/squeeze-radar/refs/heads/main/truthsocial-sentiment.json", "truthsocial-sentiment-body",
+        row => `<td>${row.date}</td><td>${row.content}</td><td>${row.keywords.join(', ')}</td>`);
+
+      fetchAndPopulate("https://raw.githubusercontent.com/marlattmedia/squeeze-radar/refs/heads/main/twitter-sentiment.json", "twitter-sentiment-body",
+        row => `<td>${row.ticker}</td><td>${row.mentions}</td><td>${row.source}</td>`);
+    }
+
+    function filterVolume(limit) {
+      const rows = document.querySelectorAll("#squeeze-table-body tr");
+      rows.forEach(row => {
+        const volume = parseInt(row.children[3].textContent.replace(/,/g, ""));
+        row.style.display = (volume < limit) ? "" : "none";
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      fetchData();
+      new TradingView.widget({
+        width: "100%",
+        height: "800",
+        symbol: "NYSE:GME",
+        interval: "15",
+        timezone: "America/New_York",
+        theme: "dark",
+        style: "1",
+        locale: "en",
+        toolbar_bg: "#f1f3f6",
+        enable_publishing: false,
+        allow_symbol_change: true,
+        container_id: "tradingview-widget"
+      });
+    });
+  </script>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+</body>
+</html>

@@ -1,52 +1,12 @@
 [
   {
     "ticker": "GME",
-    "mentions": 147,
-    "source": "ApeWisdom"
-  },
-  {
-    "ticker": "TSLA",
-    "mentions": 133,
-    "source": "ApeWisdom"
-  },
-  {
-    "ticker": "NVDA",
-    "mentions": 109,
-    "source": "ApeWisdom"
-  },
-  {
-    "ticker": "AMC",
-    "mentions": 96,
-    "source": "ApeWisdom"
-  },
-  {
-    "ticker": "AAPL",
-    "mentions": 81,
-    "source": "ApeWisdom"
-  },
-  {
-    "ticker": "PLTR",
-    "mentions": 77,
+    "mentions": 102,
     "source": "ApeWisdom"
   },
   {
     "ticker": "BBBY",
-    "mentions": 69,
-    "source": "ApeWisdom"
-  },
-  {
-    "ticker": "SPY",
-    "mentions": 65,
-    "source": "ApeWisdom"
-  },
-  {
-    "ticker": "AMD",
-    "mentions": 59,
-    "source": "ApeWisdom"
-  },
-  {
-    "ticker": "RIOT",
-    "mentions": 54,
-    "source": "ApeWisdom"
+    "mentions": 47,
+    "source": "SwaggyStocks"
   }
 ]
